@@ -370,7 +370,7 @@ pip install transformers>=4.35.0
 - Process images in parallel (modify scripts)
 - Use quantized models (add `load_in_8bit=True`)
 
-## 📊 Evaluation
+##  Evaluation
 
 Calculate annotation quality metrics:
 
