@@ -1,0 +1,182 @@
+# DOTA-VLM Configuration File
+# Complete pipeline settings
+
+# ==================== PATHS ====================
+data:
+  # Input DOTA dataset
+  dota_images_dir: "data/DOTA/images"
+  dota_annotations: "data/DOTA/labelTxt"  # Optional: original DOTA labels
+  
+  # Output directories
+  output_dir: "outputs"
+  detections_json: "outputs/detections.json"
+  crops_dir: "outputs/crops"
+  metadata_json: "outputs/metadata.json"
+  final_json: "outputs/dota_vlm.json"
+
+# ==================== DETECTION ====================
+detection:
+  # Model settings
+  model_type: "yolo_obb"  # Options: yolo_obb, oriented_rcnn
+  model_path: "checkpoints/yolo_obb.pt"
+  
+  # Detection parameters
+  conf_threshold: 0.3
+  iou_threshold: 0.5
+  
+  # DOTA categories (15 classes)
+  categories:
+    - airplane
+    - ship
+    - storage-tank
+    - baseball-diamond
+    - tennis-court
+    - basketball-court
+    - ground-track-field
+    - harbor
+    - bridge
+    - large-vehicle
+    - small-vehicle
+    - helicopter
+    - roundabout
+    - soccer-ball-field
+    - swimming-pool
+
+# ==================== CROPPING ====================
+cropping:
+  # Padding around objects
+  padding: 10
+  
+  # Minimum crop size (width, height)
+  min_crop_size: [10, 10]
+  
+  # Use corner-based cropping (more accurate for rotated objects)
+  use_corners: true
+  
+  # Image format for crops
+  crop_format: "jpg"
+  crop_quality: 95
+
+# ==================== VLM ANNOTATION ====================
+vlm:
+  # Model selection
+  model_type: "llava"  # Options: llava, blip2, florence2
+  model_name: "llava-hf/llava-1.5-7b-hf"
+  
+  # Alternative models:
+  # model_name: "llava-hf/llava-1.5-13b-hf"  # More accurate but slower
+  # model_name: "Salesforce/blip2-opt-2.7b"
+  # model_name: "Salesforce/blip2-flan-t5-xl"
+  
+  # Device settings
+  device: "cuda"  # Options: cuda, cpu
+  use_8bit: false  # Quantization for memory efficiency
+  
+  # Generation settings
+  max_tokens: 256
+  temperature: 0.7
+  do_sample: false
+  
+  # Annotation types to generate
+  annotation_types:
+    - attributes      # Object attributes (size, shape, color, etc.)
+    - verification    # Verify detected class
+    - uncertainty     # Assess confidence and quality
+    # - spatial       # Spatial relationships (future)
+    # - scene         # Scene-level captions (future)
+
+# ==================== PROMPTS ====================
+prompts:
+  # Object attribute description
+  attributes: |
+    Describe this object in detail. Include:
+    1. Size (small/medium/large)
+    2. Shape and orientation
+    3. Appearance and color
+    4. Activity or state (e.g., parked, moving, docked)
+    5. Any distinctive features
+    Be concise and factual.
+  
+  # Class verification
+  verification: |
+    Is this object a {class_name}? 
+    Answer with: YES or NO, followed by a brief explanation.
+    Consider the shape, context, and typical characteristics.
+  
+  # Uncertainty assessment
+  uncertainty: |
+    Assess this image quality and clarity:
+    1. Is the object clearly visible? (yes/no)
+    2. Any occlusions or ambiguities?
+    3. Confidence in identification (high/medium/low)
+    4. Any unusual or unclear aspects?
+
+# ==================== MERGING ====================
+merging:
+  # Include detections without VLM annotations
+  include_unverified: true
+  
+  # Generate summary report
+  generate_summary: true
+  summary_path: "outputs/dota_vlm_summary.txt"
+  
+  # COCO format options
+  coco_format:
+    version: "1.0"
+    description: "DOTA-VLM: Aerial imagery with VLM annotations"
+    contributor: "DOTA-VLM Pipeline"
+
+# ==================== PROCESSING ====================
+processing:
+  # Batch processing
+  batch_size: 1
+  num_workers: 4
+  
+  # Progress tracking
+  verbose: true
+  save_intermediate: true
+  
+  # Error handling
+  skip_on_error: true
+  log_errors: true
+  error_log: "outputs/errors.log"
+
+# ==================== FILTERING ====================
+filtering:
+  # Minimum detection score
+  min_detection_score: 0.3
+  
+  # Minimum object size (in pixels)
+  min_object_area: 100
+  
+  # Filter by categories (empty = all)
+  include_categories: []
+  exclude_categories: []
+
+# ==================== VALIDATION ====================
+validation:
+  # Validate outputs
+  check_integrity: true
+  
+  # Compare with ground truth (if available)
+  ground_truth_path: null
+  
+  # Quality thresholds
+  min_vlm_confidence: 0.0
+  flag_ambiguous: true
+
+# ==================== VISUALIZATION ====================
+visualization:
+  # Generate preview images
+  create_previews: false
+  preview_dir: "outputs/previews"
+  
+  # Draw bounding boxes
+  draw_boxes: true
+  draw_labels: true
+  
+  # Colors for different confidence levels
+  color_scheme:
+    high: [0, 255, 0]    # Green
+    medium: [255, 165, 0]  # Orange
+    low: [255, 0, 0]     # Red
