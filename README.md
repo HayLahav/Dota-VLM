@@ -18,7 +18,7 @@ A Vision–Language pipeline for enriching, validating, and auto-annotating the 
 
 ##  Overview
 
-DOTA-VLM is a semi-automatic annotation framework that enriches the original DOTA dataset using Vision–Language Models (VLMs) such as:
+DOTA-VLM is a semi-automatic annotation framework that uses Vision–Language Models (VLMs) such as:
 
 - **LLaVA** / LLaVA-NeXT
 - **BLIP-2** / BLIP-3
